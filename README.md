@@ -45,7 +45,7 @@ In head of your Arduino main code, paste this :
 #define LED_BY_STRIP 60 // Numbers of leds for each horizontal line
 #define NUMPIXELS    420 // Total numbers of pixels
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800); // Initialize your led strip
-LedStripPixelsDisplay display = LedStripPixelsDisplay(pixels, LED_BY_STRIP); // Initialize display
+LedStripPixelsDisplay display = LedStripPixelsDisplay(&pixels, LED_BY_STRIP); // Initialize display
 ```
 
 In your setup function, add :
