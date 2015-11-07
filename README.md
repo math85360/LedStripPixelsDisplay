@@ -53,7 +53,7 @@ In your setup function, add :
 ```
 pixels.begin();  // Start clock of leds strips
 display.clear(); // Clear display
-pixels.show();   // Refresh led strips
+pixels.show();   // Send data to led strips, keep in mind that pixels is a buffer and display fills this buffer, you need to call show to send buffer to led strips
 delay(20);       // Wait for 20ms before any other led strip refresh
 ```
 
