@@ -1,12 +1,11 @@
 #ifndef LedStripPixelsDisplay_h
 #define LedStripPixelsDisplay_h
-#include "Arduino.h"
-#include <../Adafruit_NeoPixel/Adafruit_NeoPixel.h>
+#include "neopixel/neopixel.h"
 
 class LedStripPixelsDisplay
 {
   public:
-    LedStripPixelsDisplay(Adafruit_NeoPixel &pixels, int ledByLines);
+    LedStripPixelsDisplay(Adafruit_NeoPixel* pixels, int ledByLines);
     void scroll_message(String msg, uint32_t color, int (*f)(int, uint32_t color));
     void tap_message(String msg, uint32_t color, int (*f)(int, uint32_t color));
     void message(String msg, uint32_t color);
@@ -21,10 +20,11 @@ class LedStripPixelsDisplay
 	void drawPath(byte p[], uint32_t color);
 	void drawPath(byte p[], uint32_t color, int from, int to);
 	void drawPath(byte p[], uint32_t color, int from, int to, int w, int offset);
+	void drawImage(byte p[]);
   private:
 	int _ledByLines;
 	int _totalpixels;
-    Adafruit_NeoPixel _pixels;
+    Adafruit_NeoPixel* _pixels;
 	uint32_t black;
 };
 #endif

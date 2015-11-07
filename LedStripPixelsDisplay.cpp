@@ -1,5 +1,5 @@
-#include <Adafruit_NeoPixel.h>
 #include "LedStripPixelsDisplay.h"
+#include "neopixel/neopixel.h"
 
 #define CHAR_0        14,17,17,17,17,17,14
 #define CHAR_1         4,12,20, 4, 4, 4,14
@@ -80,9 +80,9 @@
 #define CHAR_SPACE     0, 0, 0, 0, 0, 0, 0
 #define CHAR_EXCL      4, 4, 4, 4, 4, 0, 4
 
-LedStripPixelsDisplay::LedStripPixelsDisplay(Adafruit_NeoPixel &pixels, int ledByLines){
+LedStripPixelsDisplay::LedStripPixelsDisplay(Adafruit_NeoPixel* pixels, int ledByLines){
   //_pin = pin;
-  black = pixels.Color(0, 0, 0);
+  black = pixels->Color(0, 0, 0);
   _ledByLines = ledByLines;
   _totalpixels = _ledByLines * 7;
   _pixels = pixels;
@@ -97,7 +97,7 @@ void LedStripPixelsDisplay::scroll_message(String msg, uint32_t color, int (*f)(
     for(int j=0;j<msg.length();j++){
       setChar(j*6-i+_ledByLines, color, msg[j], len, _ledByLines-1);
     }
-    _pixels.show();
+    _pixels->show();
     delay(100);
   }
 }
@@ -122,7 +122,7 @@ void LedStripPixelsDisplay::tap_message(String msg, uint32_t color, int (*f)(int
     }
     for(int j=0;j<4;j++){
       (*f)(i+low-1, (j % 2) == 0 ? color : black);
-      _pixels.show();
+      _pixels->show();
       delay((j%2)==0 ? 250 : 100);
     }
   }
@@ -140,7 +140,7 @@ void LedStripPixelsDisplay::clear() {
 
 void LedStripPixelsDisplay::clear_color(uint32_t color) {
 	for(int cl=0;cl<_totalpixels;cl++) {
-		_pixels.setPixelColor(cl, color);
+		_pixels->setPixelColor(cl, color);
 	}
 }
 
@@ -174,9 +174,9 @@ void LedStripPixelsDisplay::onebit(int pos, uint32_t color, byte line, byte cont
 void LedStripPixelsDisplay::onebit(uint32_t color, int col, byte line, bool enabled) {
   int c = _ledByLines * line + (line % 2 == 0 ? col : (_ledByLines-1-col));
   if(enabled)
-    _pixels.setPixelColor(c, color);
+    _pixels->setPixelColor(c, color);
   else
-    _pixels.setPixelColor(c, black);
+    _pixels->setPixelColor(c, black);
 }
 
 void LedStripPixelsDisplay::setChar(int pos, uint32_t color, char ch){
@@ -276,4 +276,18 @@ void LedStripPixelsDisplay::drawPath(byte p[], uint32_t color, int from, int to,
     int v = p[i];
     onebit(color, offset + (v % w), v / w, true);
   }
+}
+
+void LedStripPixelsDisplay::drawImage(byte p[]) {
+  int len=sizeof(p);
+  len = 420 ;
+  for(int i=0;i<len;i++){
+    int v = p[i];
+    int x = i / 7;
+    int y = i % 7;
+    uint32_t color = _pixels->Color((v >> 5) << 5 ,((v>>3) & 3)<<6, (v & 7) << 5);
+    //color = _pixels->Color(255,0,0);
+    onebit(color, x, y, true);
+  }
+  //message(String(len), _pixels->Color(48,0,0));
 }
