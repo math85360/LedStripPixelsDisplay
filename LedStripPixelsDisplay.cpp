@@ -1,20 +1,6 @@
 #include "LedStripPixelsDisplay.h"
 #include "neopixel/neopixel.h"
-/**
- * Definition of char (7 rows)
- * ...................R6,R5,R4,R3,R2,R1,R0
- * Each Row are decomposed in one bit by pixel column :
- * bits 76543210
- * pixC.uuu01234 (u=unused)
- * So letter F is :
- * ##### 11111b => 31
- * #.... 10000b => 16
- * #.... 10000b => 16
- * ##... 11000b => 24
- * #.... 10000b => 16
- * #.... 10000b => 16
- * #.... 10000b => 16
- */
+
 #define CHAR_0        14,17,17,17,17,17,14
 #define CHAR_1         4,12,20, 4, 4, 4,14
 #define CHAR_2        14,17, 1, 2, 4, 8,31
@@ -94,20 +80,16 @@
 #define CHAR_SPACE     0, 0, 0, 0, 0, 0, 0
 #define CHAR_EXCL      4, 4, 4, 4, 4, 0, 4
 
-/**
- * Initialize LedStripPixelsDisplay with the Adafruit_Neopixel and the pixels count by line
- */
 LedStripPixelsDisplay::LedStripPixelsDisplay(Adafruit_NeoPixel* pixels, int ledByLines){
+  //_pin = pin;
   black = pixels->Color(0, 0, 0);
   _ledByLines = ledByLines;
   _totalpixels = _ledByLines * 7;
   _pixels = pixels;
+  //_pixels = Adafruit_NeoPixel(_ledByLines*7, _pin, NEO_GRB + NEO_KHZ800);
 }
-/**
- * Display a message by scrolling from end to start
- * f is a function that display any icons at the beginning and must return its width
- * WARNING : this function forces the pixels->show and blocks until finished 
- */
+
+
 void LedStripPixelsDisplay::scroll_message(String msg, uint32_t color, int (*f)(int, uint32_t color)) {
   for(int i=0;i<msg.length()*6+_ledByLines;i+=2) {
     clear();
@@ -120,13 +102,18 @@ void LedStripPixelsDisplay::scroll_message(String msg, uint32_t color, int (*f)(
   }
 }
 
-/**
- * Simulate a tapping message (display message char by char)
- * f is a function that display any icons at the end to simulate text cursor caret like _ or |
- * f must return its width
- * WARNING : this function forces the pixels->show and blocks until finished
- */
+
 void LedStripPixelsDisplay::tap_message(String msg, uint32_t color, int (*f)(int, uint32_t color)) {
+  //scroll_message(msg, color, f);
+  /*for(int i=0;i<msg.length()*6+60;i+=2) {
+    clear();
+    int len = (*f)(i, color);
+    for(int j=0;j<msg.length();j++){
+      setChar(j*6-i+60, color, msg[j], len, 59);
+    }
+    pixels.show();
+    delay(100);
+  }*/
   for(int i=0;i<msg.length();i++){
     clear();
     int low = (msg.length() - i + 1) > 9 ? msg.length() - 9 : 0;
@@ -140,32 +127,23 @@ void LedStripPixelsDisplay::tap_message(String msg, uint32_t color, int (*f)(int
     }
   }
 }
-/**
- * Display a message with one color
- * Message will be truncated (no scrolling)
- */
+
 void LedStripPixelsDisplay::message(String msg, uint32_t color) {
   for(int j=0;j<msg.length();j++){
     setChar(j*6, color, msg[j]);
   }
 }
-/**
- * Clear display
- */
+
 void LedStripPixelsDisplay::clear() {
 	clear_color(black);
 }
-/**
- * Fill all display with this color
- */
+
 void LedStripPixelsDisplay::clear_color(uint32_t color) {
 	for(int cl=0;cl<_totalpixels;cl++) {
 		_pixels->setPixelColor(cl, color);
 	}
 }
-/**
- * Draw each line of a char (7 lines of 5 pixels)
- */
+
 void LedStripPixelsDisplay::digits(int pos, uint32_t color, byte l0, byte l1, byte l2, byte l3, byte l4, byte l5, byte l6, int from, int to) {
    line(pos, color, 6, l0, from, to);
    line(pos, color, 5, l1, from, to);
@@ -175,9 +153,7 @@ void LedStripPixelsDisplay::digits(int pos, uint32_t color, byte l0, byte l1, by
    line(pos, color, 1, l5, from, to);
    line(pos, color, 0, l6, from, to);
 }
-/**
- * Set each pixel of a line of char (5 pixels)
- */
+
 void LedStripPixelsDisplay::line(int pos, uint32_t color, byte line, byte content, int from, int to) {
   onebit(pos, color, line, content, 0, from, to);
   onebit(pos, color, line, content, 1, from, to);
@@ -195,10 +171,6 @@ void LedStripPixelsDisplay::onebit(int pos, uint32_t color, byte line, byte cont
   }
 }
 
-/**
- * Set one pixel to a color, it's where is the transformation between coordinates row,column and pixel number 
- * (odd strip pixel number increasing but even strip pixel number decreasing because there are chained) 
- */
 void LedStripPixelsDisplay::onebit(uint32_t color, int col, byte line, bool enabled) {
   int c = _ledByLines * line + (line % 2 == 0 ? col : (_ledByLines-1-col));
   if(enabled)
@@ -207,16 +179,9 @@ void LedStripPixelsDisplay::onebit(uint32_t color, int col, byte line, bool enab
     _pixels->setPixelColor(c, black);
 }
 
-/**
- * Draw char but limits the columns between 0 and end of display
- */
 void LedStripPixelsDisplay::setChar(int pos, uint32_t color, char ch){
   setChar(pos, color, ch, 0, _ledByLines-1);
 }
-/**
- * Draw char ch at pos column (only the columns between from and to) with a color
- * (used by scroll text for example to limit the display of a char)
- */
 void LedStripPixelsDisplay::setChar(int pos, uint32_t color, char ch, int from, int to) {
   switch(ch){
     case '0':digits(pos, color, CHAR_0, from, to);break;
@@ -306,11 +271,6 @@ void LedStripPixelsDisplay::drawPath(byte p[], uint32_t color) {
 void LedStripPixelsDisplay::drawPath(byte p[], uint32_t color, int from, int to) {
   drawPath(p, color, from, to, 5, 0);
 }
-
-/**
- * Draw a path with color starting from column offset
- * Array contains
- */
 void LedStripPixelsDisplay::drawPath(byte p[], uint32_t color, int from, int to, int w, int offset) {
   for(int i=from;i<=to;i++){
     int v = p[i];
@@ -318,44 +278,6 @@ void LedStripPixelsDisplay::drawPath(byte p[], uint32_t color, int from, int to,
   }
 }
 
-/**
- * Set all pixels with same colors for drawImage method 
- * Array contains some (colorR, colorG, colorB, pixelCountWithSameColor, pixel1Column*7+pixel1Row ... pixelZColumn*7+pixelZRow) set
- * Starts from start index of the array and draw only the next p[start+3] pixels
- */
-int LedStripPixelsDisplay::drawBits(byte p[], uint32_t color, int x, int y, int start) {
-    int count = p[start];
-    for(int i = 0;i<count;i++){
-        int v = p[i+start+1];
-        int px = v / 7;
-        int py = v % 7;
-        if(py+y<7 && px+x<_ledByLines){
-            onebit(color, px+x, py+y, true);
-        }
-    }
-    return count;
-}
-
-/**
- * Draw an image starting @ x, y with elements : 
- * Array format : {(colorR, colorG, colorB, pixelCountWithSameColor, pixel1Column*7+pixel1Row ... pixelZColumn*7+pixelZRow)*}
- * Optimized for an image with a limited numbers of colors
- */
-void LedStripPixelsDisplay::drawImage(byte p[], size_t len, int x, int y) {
-    int i=3;
-    while(i<len-1){
-        uint32_t color = _pixels->Color(p[i-3], p[i-2], p[i-1]);
-        int r =drawBits(p, color, x, y, i);
-        i+=r+4;
-    }
-}
-
-/**
- * Draw an image full display with each byte corresponding to :
- * Array format : {pixel0Color, pixel1Color, ...}
- * bits : 76543210
- * color >RRRGGBBB
- */
 void LedStripPixelsDisplay::drawImage(byte p[]) {
   int len=sizeof(p);
   len = 420 ;
@@ -364,6 +286,8 @@ void LedStripPixelsDisplay::drawImage(byte p[]) {
     int x = i / 7;
     int y = i % 7;
     uint32_t color = _pixels->Color((v >> 5) << 5 ,((v>>3) & 3)<<6, (v & 7) << 5);
+    //color = _pixels->Color(255,0,0);
     onebit(color, x, y, true);
   }
+  //message(String(len), _pixels->Color(48,0,0));
 }
