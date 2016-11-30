@@ -20,9 +20,7 @@ class LedStripPixelsDisplay
 	void drawPath(byte p[], uint32_t color);
 	void drawPath(byte p[], uint32_t color, int from, int to);
 	void drawPath(byte p[], uint32_t color, int from, int to, int w, int offset);
-	int drawBits(byte p[], uint32_t color, int x, int y, int start=0);
 	void drawImage(byte p[]);
-    void drawImage(byte p[], size_t len, int x, int y);
   private:
 	int _ledByLines;
 	int _totalpixels;
